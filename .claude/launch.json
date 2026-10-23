@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rhythm-game",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["tools/serve.py", "8124"],
+      "port": 8124
+    },
+    {
+      "name": "rhythm-game-2",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["tools/serve.py", "8125"],
+      "port": 8125
+    }
+  ]
+}

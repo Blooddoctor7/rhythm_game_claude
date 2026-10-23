@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>국악기 소리 테스트</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #06070f; color: #e9ecf5; font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  p.lead { color: #9aa0b5; margin: 0 0 24px; line-height: 1.6; }
+  section { margin-bottom: 22px; }
+  h2 { font-size: 15px; color: #5ee7ff; margin: 0 0 10px; letter-spacing: 1px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.16); border-radius: 10px; padding: 10px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+  button:hover { background: rgba(255,255,255,0.12); }
+  button:active { transform: translateY(1px); }
+  .stop { border-color: #ff4d6d; color: #ff8fa3; }
+  small { color: #6f7590; }
+</style>
+</head>
+<body>
+<main>
+  <h1>국악기 소리 테스트</h1>
+  <p class="lead">"Sinmyeong"에 쓰인 악기를 하나씩 들어보는 페이지예요. 모두 녹음 샘플이 아니라 브라우저에서 실시간으로 합성한 소리입니다.<br>
+  <small>소리가 이상한 악기가 있으면 어떤 점이 어색한지 알려주세요. (예: 가야금이 너무 딱딱함, 태평소가 너무 시끄러움)</small></p>
+
+  <section>
+    <h2>가야금</h2>
+    <div class="row">
+      <button data-demo="gayaScale">5음계 (라 도 레 미 솔)</button>
+      <button data-demo="gayaVib">농현 (길게 떠는 소리)</button>
+      <button data-demo="gayaBend">꺾는 소리</button>
+      <button data-demo="gayaGliss">글리산도</button>
+    </div>
+  </section>
+  <section>
+    <h2>단소</h2>
+    <div class="row">
+      <button data-demo="danso">솔로 한 소절</button>
+    </div>
+  </section>
+  <section>
+    <h2>태평소</h2>
+    <div class="row">
+      <button data-demo="tps">후렴 선율</button>
+    </div>
+  </section>
+  <section>
+    <h2>타악기</h2>
+    <div class="row">
+      <button data-demo="jang">장구 덩·덕·쿵·덕</button>
+      <button data-demo="samul">사물놀이 장단</button>
+      <button data-demo="kkwaeng">꽹과리</button>
+      <button data-demo="jing">징</button>
+      <button data-demo="buk">북</button>
+    </div>
+  </section>
+  <section>
+    <h2>곡에서 들어보기</h2>
+    <div class="row">
+      <button data-demo="songChorus">후렴 (태평소 + 가야금 + 장구)</button>
+      <button data-demo="songSolo">단소 솔로</button>
+      <button data-demo="songSamul">사물놀이 구간</button>
+      <button class="stop" data-demo="stop">정지</button>
+    </div>
+  </section>
+</main>
+
+<script src="js/music.js"></script>
+<script src="js/boss.js"></script>
+<script src="js/gugak.js"></script>
+<script>
+'use strict';
+const song = composeGugak();
+let bus = null;
+
+// [16분 위치, 악기, 옵션]
+const DEMOS = {
+  gayaScale: [57, 60, 62, 64, 67, 69, 72, 74, 76, 79, 81].map((m, i) => [i * 2, 'gaya', { midi: m, dur: GS * 2 }]),
+  gayaVib: [[0, 'gaya', { midi: 69, dur: GS * 12, vib: 45 }], [16, 'gaya', { midi: 76, dur: GS * 12, vib: 45 }]],
+  gayaBend: [[0, 'gaya', { midi: 74, dur: GS * 8, bend: 2 }], [8, 'gaya', { midi: 72, dur: GS * 8, bend: 2 }], [16, 'gaya', { midi: 69, dur: GS * 8 }]],
+  gayaGliss: [69, 72, 74, 76, 79, 81, 84, 86].map((m, i) => [i, 'gaya', { midi: m, dur: GS }]),
+  danso: DANSO_SOLO[0].concat(DANSO_SOLO[1].map(([s, m, l, o]) => [s + 16, m, l, o]))
+    .map(([s, m, l, o = {}]) => [s, 'danso', Object.assign({ midi: m, dur: l * GS }, o)]),
+  tps: TPS_LINE[0].concat(TPS_LINE[1].map(([s, m, l, o]) => [s + 16, m, l, o]))
+    .map(([s, m, l, o = {}]) => [s, 'tps', Object.assign({ midi: m, dur: l * GS }, o)]),
+  jang: [['deong', 0], ['deok', 2], ['kung', 4], ['deok', 6], ['deong', 8], ['deok', 10], ['deok', 11], ['kung', 12], ['deok', 14]]
+    .map(([st, s]) => [s, 'jang', { stroke: st }]),
+  samul: SAMUL.flatMap((pat, b) => Object.entries(pat).map(([k, st]) => [b * 16 + +k, 'jang', { stroke: { D: 'deong', K: 'kung', t: 'deok' }[st] }])),
+  kkwaeng: Array.from({ length: 16 }, (_, i) => [i * 2, 'kkwaeng', { damp: i % 4 !== 0, vel: i % 4 ? 0.5 : 0.8 }]),
+  jing: [[0, 'jing', {}]],
+  buk: [[0, 'buk', {}], [8, 'buk', { vel: 0.8 }], [12, 'buk', { vel: 0.8 }]],
+};
+// 곡의 특정 마디 구간을 그대로 재생
+const SONG_PARTS = { songChorus: [14, 18], songSolo: [22, 26], songSamul: [30, 34] };
+
+function stop() {
+  if (bus) Sound.closeBus(bus);
+  bus = null;
+}
+function play(name) {
+  const ctx = Sound.init();
+  stop();
+  bus = Sound.createBus(GS * 3);
+  bus.out.gain.value = 0.8;
+  const t0 = ctx.currentTime + 0.08;
+  if (SONG_PARTS[name]) {
+    const [a, b] = SONG_PARTS[name];
+    const from = SONG.leadIn + a * 16 * GS, to = SONG.leadIn + b * 16 * GS;
+    for (const e of song.music) if (e.t >= from && e.t < to) playEvent(bus, t0 + e.t - from, e);
+  } else {
+    for (const [s, type, o] of DEMOS[name]) playEvent(bus, t0 + s * GS, Object.assign({ type }, o));
+  }
+}
+document.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.demo === 'stop') stop();
+  else play(b.dataset.demo);
+}));
+</script>
+</body>
+</html>
