@@ -43,6 +43,6 @@ BEAT RUSH의 곡과 채보는 직접 작곡·제작했습니다.
 - 받은 곳: [github.com/sfzinstruments/karoryfer.black-and-blue-basses](https://github.com/sfzinstruments/karoryfer.black-and-blue-basses)
 - 변경 사항: 12음을 골라 길이를 줄이고 모노·AAC로 변환, 음량을 맞춤
 
-밴드 악기 샘플은 `tools/build-band-samples.mjs`로 다시 만들 수 있습니다 (원본은 `sample-sources/`, 배포에서 제외).
+밴드 악기 샘플은 `tools/build-band-samples.mjs`로 다시 만들 수 있습니다 (원본은 별도 저장소 [rhythm_game_claude_samples](https://github.com/Blooddoctor7/rhythm_game_claude_samples), 게임 폴더 안에 `sample-sources`로 받아서 사용. 게임 실행에는 필요 없음).
 
 게임 타이틀 화면 오른쪽 아래에도 출처를 표시합니다.

@@ -3,6 +3,8 @@
  *
  *  sample-sources/ 의 원본 라이브러리에서 필요한 음만 골라
  *  samples/guitar.js, samples/bass.js, samples/drums.js 를 만듭니다.
+ *  sample-sources/ 는 별도 저장소라 먼저 받아야 합니다:
+ *    git clone https://github.com/Blooddoctor7/rhythm_game_claude_samples.git sample-sources
  *  (앞 무음 자르기 → 모노 → 길이 줄이고 페이드아웃 → 음량 맞추기 → AAC → base64)
  *
  *  사용: node tools/build-band-samples.mjs        (macOS afconvert 필요)
